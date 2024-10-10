@@ -1,8 +1,8 @@
 import {Inter} from 'next/font/google';
 import "./globals.css";
-import { Bold } from 'lucide-react';
 import Header from '@/components/header';
-
+import { SWRConfig } from 'swr';
+import { ClerkProvider } from '@clerk/clerk-react';
 
 export const metadata = {
   title: "Scheduler",
@@ -13,6 +13,7 @@ const inter = Inter({subsets: ["latin"]});
 
 export default function RootLayout({ children }) {
   return (
+    <ClerkProvider>
     <html lang="en">
       <body
         className={`inter.classname`}
@@ -32,5 +33,6 @@ export default function RootLayout({ children }) {
         </footer>
       </body>
     </html>
+    </ClerkProvider>
   );
 }
