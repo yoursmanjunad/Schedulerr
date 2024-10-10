@@ -1,7 +1,11 @@
 import Link from "next/link"; // Use next/link for navigation
 import Image from "next/image";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { PenBox } from "lucide-react";
+import { SignedOut, SignedIn } from "@clerk/nextjs"; 
+import { UserButton } from "@clerk/nextjs"; // Import UserButton for signed-in users
+import UserMenu from "./UserMenu";
+
 const Header = () => {
   return (
     <nav className="mx-auto py-2 px-4 flex justify-between items-center shadow-md border-b-2">
@@ -15,22 +19,27 @@ const Header = () => {
         />
       </Link>
       <div className="flex items-center gap-4">
-  {/* Link for Create Event */}
-  <Link href="/events?create=true">
-    <Button className="flex items-center gap-2">
-      <PenBox size={18} />
-      Create Event
-    </Button>
-  </Link>
+        {/* Link for Create Event */}
+        <Link href="/events?create=true">
+          <Button className="flex items-center gap-2">
+            <PenBox size={18} />
+            Create Event
+          </Button>
+        </Link>
 
-  {/* Link for Login */}
-  <Link href="/login">   {/* Assuming you want the Login button to redirect to a login page */}
-    <Button variant="outline">
-      Login
-    </Button>
-  </Link>
-</div>
-</nav>
+        {/* Conditional rendering for Login Button */}
+        <SignedOut>
+          <Link href="/login"> {/* Navigate to login page */}
+            <Button variant="outline">Login</Button>
+          </Link>
+        </SignedOut>
+        
+        {/* Render UserButton for signed-in users */}
+        <SignedIn>
+          <UserMenu />
+        </SignedIn>
+      </div>
+    </nav>
   );
 };
 
