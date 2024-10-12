@@ -9,6 +9,8 @@ import { z } from "zod";
 import { usernameSchema } from "@/app/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
+import { updateUsername } from "@/app/actions/user";
+import useFetch from "@/hooks/use-fetch";
 
 // Define schema using Zod
 // const usernameSchema = z.object({
@@ -29,11 +31,12 @@ const Dashboard = () => {
   useEffect(()=>{
     setValue("username", user?.username);
   },[isLoaded]);
-  // Handle form submission
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    // Handle username update logic here
+  const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
+
+  const onSubmit = async (data) => {
+    await fnUpdateUsername(data.username);
   };
+
 
   if (!isLoaded) {
     return <div>Loading...</div>;
@@ -67,6 +70,9 @@ const Dashboard = () => {
                 <p className="text-red-600">{errors.username.message}</p>
               )}
             </div>
+            {loading && (
+              <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />
+            )}
             <Button type="submit">Update Username</Button>
           </form>
         </CardContent>
