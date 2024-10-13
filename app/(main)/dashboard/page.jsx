@@ -1,45 +1,85 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { usernameSchema } from "@/app/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { updateUsername } from "@/app/actions/user";
-import useFetch from "@/hooks/use-fetch";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { BarLoader } from "react-spinners";
+import { usernameSchema } from "@/app/lib/validators";
 
-// Define schema using Zod
-// const usernameSchema = z.object({
-//   username: z.string()
-//     .min(3, { message: "Username must be at least 3 characters long" })
-//     .max(20, { message: "Username can't be more than 20 characters" })
-//     .regex(/^[a-zA-Z0-9]+$/, { message: "Username can only contain letters and numbers" }),
-// });
+// Placeholder functions for fetch calls
+const updateUsername = async (username) => {
+  // Simulate an API call to update the username
+  return new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1000));
+};
 
-const Dashboard = () => {
-  const { isLoaded, user } = useUser();
+const getLatestUpdates = async () => {
+  // Simulate an API call to fetch the latest updates
+  return new Promise((resolve) =>
+    setTimeout(() => resolve([{ id: 1, event: { title: "Meeting" }, name: "John", startTime: new Date() }]), 1000)
+  );
+};
 
-  // Initialize useForm with zodResolver and schema
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(usernameSchema),
   });
 
-  useEffect(()=>{
-    setValue("username", user?.username);
-  },[isLoaded]);
-  const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
+  // Loading state for updates and form submission
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [upcomingMeetings, setUpcomingMeetings] = useState(null);
+
+  useEffect(() => {
+    if (user?.username) {
+      setValue("username", user.username);
+    }
+  }, [isLoaded, user, setValue]);
+
+  // Fetch latest updates
+  useEffect(() => {
+    if (isLoaded) {
+      const fetchUpdates = async () => {
+        try {
+          setLoading(true);
+          const updates = await getLatestUpdates();
+          setUpcomingMeetings(updates);
+        } catch (err) {
+          setError(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUpdates();
+    }
+  }, [isLoaded]);
 
   const onSubmit = async (data) => {
-    await fnUpdateUsername(data.username);
+    setLoading(true);
+    setError(null);
+    try {
+      await updateUsername(data.username);
+      alert("Username updated successfully!");
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <p>Loading...</p>;
   }
 
   return (
@@ -47,38 +87,40 @@ const Dashboard = () => {
       {/* Welcome Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Welcome {user?.firstName}</CardTitle>
+          <CardTitle>Welcome, {user?.firstName || "Guest"}!</CardTitle>
         </CardHeader>
       </Card>
 
-      {/* Unique Link Card */}
+      {/* Form to Update Username */}
       <Card>
         <CardHeader>
-          <CardTitle>Your unique link</CardTitle>
+          <CardTitle>Your Unique Link</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <div className="flex items-center gap-2">
                 <span>{typeof window !== "undefined" ? `${window.location.origin}/` : ""}</span>
-                <Input
-                  placeholder="username"
-                  {...register("username")}
-                />
+                <Input {...register("username")} placeholder="username" />
               </div>
               {errors.username && (
-                <p className="text-red-600">{errors.username.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.username.message}
+                </p>
+              )}
+              {error && (
+                <p className="text-red-500 text-sm mt-1">{error?.message}</p>
               )}
             </div>
             {loading && (
               <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />
             )}
-            <Button type="submit">Update Username</Button>
+            <Button type="submit" disabled={loading}>
+              Update Username
+            </Button>
           </form>
         </CardContent>
       </Card>
     </div>
   );
-};
-
-export default Dashboard;
+}

@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from '@/components/header';
 import { SWRConfig } from 'swr';
 import { ClerkProvider } from '@clerk/nextjs';
-import { CreateEventDrawer } from '@/components/create-event';
+import CreateEventDrawer  from '@/components/create-event';
 
 // Metadata for the application
 export const metadata = {

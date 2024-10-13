@@ -1,4 +1,4 @@
-"use client"
+"use client"; 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,7 +16,7 @@ export default function CreateEventDrawer(){
     const [isOpen, isClosed] = useState(true);
     const handleClose = () =>{};
   return (
-    <Drawer>
+    <Drawer open = {isOpen} onClose={handleClose}>
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
