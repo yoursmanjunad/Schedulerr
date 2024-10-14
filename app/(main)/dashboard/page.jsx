@@ -9,22 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BarLoader } from "react-spinners";
 import { usernameSchema } from "@/app/lib/validators";
-
-// Placeholder functions for fetch calls
-const updateUsername = async (username) => {
-  // Simulate an API call to update the username
-  return new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1000));
-};
-
-const getLatestUpdates = async () => {
-  // Simulate an API call to fetch the latest updates
-  return new Promise((resolve) =>
-    setTimeout(() => resolve([{ id: 1, event: { title: "Meeting" }, name: "John", startTime: new Date() }]), 1000)
-  );
-};
+import useFetch from "@/hooks/use-fetch";
+import { updateUsername } from "@/actions/user";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
+  const [apiError, setApiError] = useState(null);
 
   const {
     register,
@@ -35,46 +25,22 @@ export default function DashboardPage() {
     resolver: zodResolver(usernameSchema),
   });
 
-  // Loading state for updates and form submission
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [upcomingMeetings, setUpcomingMeetings] = useState(null);
-
+  // Set the form value with the current user's username
   useEffect(() => {
     if (user?.username) {
       setValue("username", user.username);
     }
   }, [isLoaded, user, setValue]);
 
-  // Fetch latest updates
-  useEffect(() => {
-    if (isLoaded) {
-      const fetchUpdates = async () => {
-        try {
-          setLoading(true);
-          const updates = await getLatestUpdates();
-          setUpcomingMeetings(updates);
-        } catch (err) {
-          setError(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchUpdates();
-    }
-  }, [isLoaded]);
+  // Hook for updating the username with better error handling
+  const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
 
   const onSubmit = async (data) => {
-    setLoading(true);
-    setError(null);
     try {
-      await updateUsername(data.username);
-      alert("Username updated successfully!");
+      await fnUpdateUsername(data.username);
+      setApiError(null); // Clear API errors on success
     } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
+      setApiError(err?.message || "Error updating username"); // Handle API errors
     }
   };
 
@@ -108,8 +74,8 @@ export default function DashboardPage() {
                   {errors.username.message}
                 </p>
               )}
-              {error && (
-                <p className="text-red-500 text-sm mt-1">{error?.message}</p>
+              {apiError && (
+                <p className="text-red-500 text-sm mt-1">{apiError}</p>
               )}
             </div>
             {loading && (
