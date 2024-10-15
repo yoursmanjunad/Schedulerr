@@ -1,9 +1,23 @@
-import React from 'react'
+import { getUserEvents } from "@/actions/events"
+import { Suspense } from "react"
+import EventCard from "@/components/event-card";
 
-const Events = () => {
+export default function EventsPage(){
+  return (<Suspense fallback={<div>Loading Events...</div>}>
+<Events/>
+  </Suspense>)
+}
+const Events = async() => {
+  const {events, username} = await getUserEvents();
+  if (events.length===0) {
+      return <p>You haven&apos;t created any events yet!</p>
+  }
   return (
-    <div>Events</div>
+    <div>
+      {
+        events.map((event)=>(
+<EventCard key={event.id} event = {event} username={username}/>
+        ))}
+      </div>
   )
 }
-
-export default Events
