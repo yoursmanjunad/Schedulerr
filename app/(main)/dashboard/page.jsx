@@ -36,12 +36,7 @@ export default function DashboardPage() {
   const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
 
   const onSubmit = async (data) => {
-    try {
-      await fnUpdateUsername(data.username);
-      setApiError(null); // Clear API errors on success
-    } catch (err) {
-      setApiError(err?.message || "Error updating username"); // Handle API errors
-    }
+    fnUpdateUsername(data.username);
   };
 
   if (!isLoaded) {
