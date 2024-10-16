@@ -1,4 +1,3 @@
-import React from 'react'
 
 const EventCard = (event, username) => {
   return (
